@@ -1,0 +1,129 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.container {
+    width: 236px;
+    height: 254px;
+    /*border: 1px solid #0883F4;*/
+}
+
+.header {
+    height: 68px;
+    display: flex;
+    /*background-color: red;*/
+}
+
+.drag-header {
+    height: 16px;
+    -webkit-app-region: drag;
+}
+
+.portrait {
+    width: 48px;
+    height: 48px;
+    margin-left: 25px;
+    border-radius: 4px;
+    float: left;
+}
+
+.detail {
+    width: 140px;
+    height: 75px;
+    padding-left: 8px;
+}
+
+.uid {
+    color: #a5a4a4;
+    font-size: 12px;
+}
+
+span {
+    font-family: "Microsoft YaHei";
+}
+
+.name {
+    font-size: 14px;
+}
+
+.information span:hover {
+    cursor: pointer;
+}
+
+
+.signature {
+    font-size: 12px;
+    display: -webkit-box !important;
+    width: 100%;
+    color: #7C7D7D;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-all;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.division {
+    border: 0.5px solid #D9DADC;
+    margin-left: 16px;
+    width: 202px;
+}
+
+.content {
+    height: 168px;
+    /*background-color: red;*/
+}
+
+.icon {
+    height: 16px;
+}
+
+.information {
+    height: 100px;
+    width: 236px;
+    padding-top: 13px;
+}
+
+    .information .contact {
+        height: 30px;
+        line-height: 30px;
+        padding: 2px 0 4px 25px;
+        width: 100%;
+        display: flex;
+    }
+
+        .information .contact img {
+            margin-top: 2px;
+        }
+
+
+.sendMessage {
+    width: 206px;
+    height: 30px;
+    border: none;
+    background: -webkit-linear-gradient(left, #0283f0, #28abf9);
+    background: -o-linear-gradient(right, #0283f0, #28abf9);
+    background: -moz-linear-gradient(right, #0283f0, #28abf9);
+    background: linear-gradient(to right, #0283f0, #28abf9);
+    border-radius: 4px;
+    margin-left: 23px;
+    margin-top: 12px;
+    color: white;
+    cursor: pointer;
+}
+
+.personalDetail {
+    font-size: 14px;
+    line-height: 30px;
+    margin-top: -4px;
+    margin-left: 10px;
+    margin-right: 26px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-all;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    display: -webkit-box !important;
+}

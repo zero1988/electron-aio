@@ -1,0 +1,466 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>文件传输</title>
+    <script src="jquery-1.11.3.min.js"></script>
+    <script src="contextMenu.js"></script>
+    <script src="upload.js"></script>
+    <script src="download.js"></script>
+    <script src="complete.js"></script>
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/transfer.css" />
+    <style type="text/css">
+        /*右键菜单*/
+        .popup-item {
+            box-shadow: rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px, rgba(0, 0, 0, 0.2) 0px 3px 1px -2px;
+            background: white;
+            border-radius: 2px;
+            margin: 6px auto;
+            position: absolute;
+            padding: 4px 2px;
+            list-style: none;
+            font-size: 14px;
+            display: none;
+            z-index: 99999;
+        }
+
+            .popup-item li {
+                padding: 4px 20px;
+                overflow: hidden;
+                max-width: 250px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+                .popup-item li:hover {
+                    background-color: #e0e0e0;
+                    cursor: default;
+                }
+
+        .transfer-close {
+            position: absolute;
+            right: 5px;
+            width: 10px;
+            top: 2px;
+            cursor: pointer;
+            color: #777676;
+            /*display: none;*/
+        }
+    </style>
+
+    <script type="text/javascript">
+        var hideComplete = false; // 隐藏成功列表？
+
+        var hideMenu = function (e) {
+            if (!e) e = window.event;
+            var x = e.clientX;
+            var y = e.clientY;
+            var menu = document.getElementById("menu");
+            if (x < menu.offsetLeft || x > (menu.offsetLeft + menu.clientWidth) ||
+                y < menu.offsetTop || y > (menu.offsetTop + menu.clientHeight)) {
+                menu.style.display = "none";
+            }
+
+            var downloadToPath = document.getElementById("downloadToPath");
+            if (x < downloadToPath.offsetLeft || x > (downloadToPath.offsetLeft + downloadToPath.clientWidth) ||
+                y < downloadToPath.offsetTop || y > (downloadToPath.offsetTop + downloadToPath.clientHeight)) {
+                downloadToPath.style.display = "none";
+            }
+        }
+
+        var getFileUri = function (path) {
+            var p = path.replace(/\\/g, '/');
+            if (!p.startsWith('file:///')) {
+                p = 'file:///' + p;
+            }
+
+            return p;
+        }
+
+        // Date转string
+        Date.prototype.Format = function (fmt) { //author: meizz
+            let o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (let k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+
+        function getNumByStr(str) {
+            if (!str) return 0;
+            var result = str.replace(/[^0-9]/ig, '');
+            if (result) {
+                return parseInt(result,10);
+            }
+            return 0;
+        }
+
+        function chgTab(tab) {
+            $('[data="' + tab + '"]').addClass('selected').siblings().removeClass('selected')
+            $('[tab="'+tab+'"]').show().siblings().hide()
+        }
+
+        // 一些全局变量
+        var mUpload = {}, mDownload = {}, mComplete = {}, currentUrl = '';
+        $(function () {
+            $('[data="down"]').addClass('selected')
+            $('[tab="down"]').show().siblings().hide()
+            //$('.add-wrapper').hide()
+
+            $('.tab-wrapper ul li').click(function () {
+                var ct = $(this)
+                if (!ct.hasClass('selected'))
+                    ct.addClass('selected')
+                ct.siblings().removeClass('selected')
+
+                var t = ct.attr('data')
+                //if (t == 'upload') {
+                //    $('.add-wrapper').show()
+                //} else {
+                //    $('.add-wrapper').hide()
+                //}
+                $('[tab="' + t + '"]').show().siblings().hide()
+            })
+
+            mUpload = new Upload({
+                container: $('.upload-container'),
+                files: []
+            })
+
+            mDownload = new Download({
+                container: $('.download-container'),
+                files: []
+            })
+
+            mComplete = new Complete({
+                container: $('.complete-container'),
+                files: []
+            })
+
+
+            if (hideComplete) {
+                $('.complete-container').hide();
+                $('[data="complete"]').hide();
+            }
+
+        })
+        // 没有使用
+        var addFile = function () {
+            cefTransfer.selectFile(function (data) {
+                var fileObj = JSON.parse(data)
+                mUpload.createNewItem(fileObj)
+            })
+        }
+
+        var doTransferUpload = function (param) {
+            //param.extension = '.' + param.extension;
+            var item = mUpload.createNewItem(param);
+
+            // 跳转tab页
+            chgTab('upload');
+
+            // 直接上传
+            //item.upload();
+            //item.upload(function (data) { // 成功回调
+            //    mUpload.removeItem(param);
+            //    mComplete.createNewItem(param);
+
+            //    cefTransfer.exec('upBigFileSuccess', JSON.stringify(param));
+            //}, function (data) { // 失败回调
+            //    cefTransfer.exec('upBigFileFailure', JSON.stringify(param));
+            //});
+        }
+
+        var doTransferDownload = function (param, downToPath) {
+            if (param.fileStatus == 9) {
+                param.status = 'notify';
+            }
+            var item = mDownload.createNewItem(param);
+
+            // 跳转tab页
+            chgTab('down');
+
+            // 直接下载
+            //item.download();
+            //item.download(function (data) { // 成功回调
+            //    param.file_path = data.path;
+            //    mDownload.removeItem(param);
+            //    mComplete.createNewItem(param);
+
+            //    cefTransfer.exec('downBigFileSuccess', JSON.stringify(param));
+            //}, function (data) { // 失败回调
+            //    cefTransfer.exec('downBigFileFailure', JSON.stringify(param));
+            //});
+        }
+        // 移除所有数据
+        var doRemoveAll = function () {
+            mUpload.removeAllItem();
+            mDownload.removeAllItem();
+            mComplete.removeAllItem();
+
+            // 将正在传输着的连接都关闭
+            cefTransfer.closeAllClient();
+        }
+        // 通知到达，对方已经上传完成，可以下载
+        var notifyCanDownload = function (fileid) {
+            mDownload.notifyCanDownload(fileid);
+        }
+
+        // 从本地查询出所有的加入列表
+        var doAddAllItem = function (params) {
+            for (var i = params.length - 1; i > -1; i--) {
+                addAllItem(params[i]);
+            }
+        }
+        var addAllItem = function (param) {
+            var stu = parseInt(param.file_status, 10);
+            // 成功列表
+            if (stu == 0) {
+                doAddCompleteItem(param);
+            } else {
+                var isMine = param.user_id == param.owner_id;
+                if (isMine) { // 上传列表
+                    doAddUploadItem(param);
+                } else { // 下载列表
+                    doAddDownloadItem(param);
+                }
+            }
+        }
+        var doAddCompleteItem = function(param) {
+            mComplete.createNewItem(param);
+        }
+        var doAddUploadItem = function (param) {
+            var msgStu = parseInt(param.msg_status, 10);
+            if (msgStu == 1) {// 消息发送失败
+                param.status = '';
+            } else {
+                var stu = parseInt(param.file_status, 10);
+                switch (stu) {
+                    case 1:
+                        param.status = 'cancel';
+                        mUpload.createNewItem(param);
+                        break;
+                    case 2:// 尝试告诉IM服务器
+                        param.status = '';
+                        // TODO
+                        //mUpload.createNewItem(param);
+                        break;
+                    case 4: // 还未点击过上传，就取消了，给个重新上传
+                        param.status = 'cancel';
+                        mUpload.createNewItem(param);
+                    case 8: // 别的端上传的，放到下载
+                        param.status = 'beforeReady';
+                        mDownload.createNewItem(param);
+                        break;
+                    case 9: // 别的端上传的，放到下载
+                        param.status = 'notify';
+                        mDownload.createNewItem(param);
+                        break;
+                }
+            }
+
+        };
+        var doAddDownloadItem = function (param) {
+            var stu = parseInt(param.file_status, 10);
+            switch (stu) {
+                case 1:
+                    param.status = 'fail';
+                    param.down_to_path = param.file_path;
+                    break;
+                case 2:
+                    param.status = 'pause';
+                    param.down_to_path = param.file_path;
+                    break;
+                case 8: // 只有占位，还未成功，这边都当做可以下载处理一下
+                    //param.status = 'beforeReady';
+                    //break;
+                case 9: // 可以下载
+                    //param.status = 'notify';
+                    //break;
+                default:
+                    param.status = 'notify';
+                    break;
+            }
+            mDownload.createNewItem(param);
+        };
+        // 跳转到指定文件位置处
+        var scrollToFile = function (file, type) {
+            file = JSON.parse(file);
+            var fileid = file.file_id;
+            switch (type) {
+                case 'U':
+                    chgTab('upload');
+                    //mUpload.scrollToFile(fileid);
+                    break;
+                case 'D':
+                    chgTab('down');
+                    //mDownload.scrollToFile(fileid);
+                    break;
+                case 'C':
+                    chgTab('complete');
+                    //mComplete.scrollToFile(fileid);
+                    break;
+            }
+            var fileEle = $('[file-id="' + fileid + '"]');
+            if (fileEle.length == 0) {
+                addAllItem(file);
+                fileEle = $('[file-id="' + fileid + '"]');
+            } else { // 适配转发
+                if (fileEle.length > 1) {
+                   fileEle = $('[msg-id="' + file.msg_id + '"]');
+                }
+            }
+            // 减去8是为了美观
+            var scTop = fileEle.offset().top - $('.main-outer').offset().top + $('.main-outer').scrollTop() - 8;
+            $('.main-outer').scrollTop(scTop);
+
+            // 选中着色
+            fileEle.addClass('selected');
+            fileEle.siblings('.selected').removeClass('selected');
+        }
+        // 撤回的消息，从列表中移除
+        var doBFileRevoke = function (files) {
+            for (var i = 0; i < files.length; i++) {
+                mComplete.removeItem(files[i]);
+                mUpload.removeItem(files[i]);
+                mDownload.removeItem(files[i]);
+            }
+        }
+    </script>
+</head>
+<body onmousedown="hideMenu(event)">
+    <div class="transfer-outer">
+        <div class="head" style="position:sticky;">
+            <span class="title" style="padding-left:32px">大文件管理</span>
+            <ul class="window-box">
+                <li onclick="cefTransfer.close()"><a class="icon-window-close close"></a></li>
+            </ul>
+        </div>
+        <div class="tab-wrapper">
+            <ul>
+                <li data="down">下载列表</li>
+                <li data="upload">上传列表</li>
+                <li data="complete">已完成</li>
+            </ul>
+        </div>
+        <!--<div class="add-wrapper">
+            <a class="btn btn-blue" style="margin:8px auto 4px 8px;" onclick="addFile()">添加文件</a>
+        </div>-->
+        <div class="main-outer">
+            <div class="files" style="padding-bottom:20px;">
+                <div class="download-container" tab="down">
+                    <!--<div class="file-content">
+                        <div class="icon-wrapper">
+                            <img class="icon" src="../css/images/default.png" />
+                        </div>
+                        <div class="file-details">
+                            <div class="title-area">
+                                <a class="action-link link-bolder">这是一个文件.txt</a>
+                            </div>
+                            <div class="file-size">1.4MB</div>
+                            <div class="file-from">来自会话: 普实软件</div>
+                        </div>
+                        <div class="file-date-wrapper">
+                            <span class="file-date">2018-10-15 02:30</span>
+                        </div>
+
+                        <div class="control-wrapper">
+                            <a class="control-open action-link">打开</a>
+                        </div>
+                    </div>-->
+                </div>
+                <div class="upload-container" tab="upload">
+                    <!--<div class="file-content">
+                        <div class="icon-wrapper">
+                            <img class="icon" src="../css/images/default.png" />
+                        </div>
+                        <div class="file-details">
+                            <div class="title-area">
+                                <a class="action-link link-bolder">这是一个文件.txt</a>
+                            </div>
+                            <div class="file-size">1.4MB</div>
+
+                            <div class="progress-container">
+                                <div class="progress-info">
+                                    <span class="speed">212KB/S</span> -
+                                    <span class="receive">1.2MB</span> , 共
+                                    <span class="total">1.5MB</span>
+                                </div>
+                                <div class="progress-desc"></div>
+                                <div class="progress-wrapper">
+                                    <span class="progress"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="control-wrapper control-content-center">
+                            <a class="btn btn-blue" data-status="ready">上传</a>
+                        </div>
+                    </div>-->
+                </div>
+                <div class="complete-container" tab="complete">
+                    <!--<div class="file-content">
+                        <div class="icon-wrapper">
+                            <img class="icon" src="../css/images/default.png" />
+                        </div>
+                        <div class="file-details">
+                            <div class="title-area">
+                                <a class="action-link link-bolder">这是一个文件.txt</a>
+                            </div>
+                            <div class="file-size">1.4MB</div>
+                            <div class="file-from">来自会话: 普实软件</div>
+                        </div>
+                        <div class="file-date-wrapper">
+                            <span class="file-date">2018-10-15 02:30</span>
+                        </div>
+
+                        <div class="control-wrapper">
+                            <a class="icon-close remove"></a>
+                            <a class="control-open action-link">打开</a>
+                        </div>
+                    </div>
+                    <div class="file-content">
+                        <div class="icon-wrapper">
+                            <img class="icon" src="../css/images/default.png" />
+                        </div>
+                        <div class="file-details">
+                            <div class="title-area">
+                                <a class="action-link link-bolder">这是一个文件.txt</a>
+                            </div>
+                            <div class="file-size">1.4MB</div>
+                            <div class="file-from">来自会话: 普实软件</div>
+                        </div>
+                        <div class="file-date-wrapper">
+                            <span class="file-date">2018-10-15 02:30</span>
+                        </div>
+
+                        <div class="control-wrapper">
+                            <a class="control-open action-link">打开</a>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <ul id="menu" class="popup-item">
+        <li id="file-copy" onclick="execContext('copy')">复制</li>
+        <li id="file-open" onclick="execContext('open')">打开</li>
+        <li id="file-savaAs" onclick="execContext('saveAs')">另存为</li>
+        <li id="file-openFolder" onclick="execContext('openFolder')">打开目录</li>
+    </ul>
+    <ul id="downloadToPath" class="popup-item">
+        <li onclick="downloadToPath(this)">下载到指定目录</li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>员工信息</title>
+    <link rel="stylesheet" type="text/css" href="../css/information.css">
+
+    <script type="text/javascript">
+        var userId = '';
+        function loadUserData(d) {
+            d = d.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+            var u = JSON.parse(d);
+            userId = u.user_id
+            var ava = document.getElementById('ava');
+            ava.setAttribute('src', 'localfile://assets/users/' + u.user_id + '.png?dc='+new Date()); // 设置头像
+
+            var gender = document.getElementById('gender');
+            gender.setAttribute('src', u.sex == 'F' ? '../css/images/female.png' : '../css/images/male.png');
+
+            chgInHtml('name', u.user_name);
+            chgInHtml('uid', '(' + u.user_id + ')');
+            chgInHtml('notes', u.notes);
+            chgInHtml('phone', u.mobile);
+            chgInHtml('email', u.email);
+            chgInHtml('org', u.def_role_name);
+
+        }
+
+        function chgInHtml(id, html) {
+            var div = document.getElementById(id);
+            div.innerHTML = html;
+        }
+
+        function sendMessage() {
+            cefInformation.sendMessage(userId);
+        }
+
+        function sendEmail(m) {
+            var email = m.innerTEXT;
+            cefInformation.sendEmail(email);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="drag-header"></div>
+        <div class="header">
+
+            <img id="ava" src="image.jpg" class="portrait">
+            <div class="detail">
+                <div>
+                    <span id="name" class="name">姓名显示</span>
+                    <span id="uid" class="uid"></span>
+                    <img id="gender" src="../css/images/male.png">
+                </div>
+                <span id="notes" class="signature">个性签名区</span>
+            </div>
+        </div>
+        <div class="division"></div>
+        <div class="content">
+            <div class="information">
+                <div class="contact">
+                    <img src="../css/images/phone.png" class="icon">
+                    <span id="phone" class="personalDetail">130xxxxxxxx</span>
+                </div>
+                <div class="contact">
+                    <img src="../css/images/email.png" class="icon">
+                    <span id="email" class="personalDetail" onclick="sendEmail(this)">xxxx@qq.com</span>
+                </div>
+                <div class="contact">
+                    <img src="../css/images/structure.png" class="icon">
+                    <span id="org" class="personalDetail">普实软件/技术部/产品</span>
+                </div>
+            </div>
+            <input type="button" value="发送消息" onclick="sendMessage()" class="sendMessage" sty />
+        </div>
+    </div>
+</body>
+</html>

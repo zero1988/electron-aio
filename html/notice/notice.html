@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-size: 12px;
+            font-family: "微软雅黑";
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 14px 14px 10px 14px;
+            color: #666;
+        }
+
+        .button_wrapper {
+            text-align: left;
+            border-top: 1px solid #e4e9ee;
+            padding: 10px 14px;
+        }
+
+            .button_wrapper a {
+                color: #3bbaff;
+                text-decoration: none;
+            }
+
+                .button_wrapper a:hover {
+                    cursor: pointer;
+                }
+
+        ul {
+            margin: 0 0 10px 0;
+            padding: 0;
+            overflow: auto;
+            max-height: 270px;
+        }
+
+            ul li {
+                list-style: none;
+                max-width: 290px;
+            }
+
+                ul li .content {
+                    display: flex;
+                    padding: 7px 14px;
+                }
+
+                ul li:hover {
+                    background-color: #f0f1f3;
+                    cursor: pointer;
+                }
+
+        li .img {
+            min-width: 40px;
+            width: 40px;
+            height: 40px;
+            display: block;
+            background-size: 100%;
+            border-radius: 2px;
+            background-repeat: no-repeat;
+        }
+
+        li .message_wrapper {
+            flex: 1;
+            font-size: 14px;
+            margin-left: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        li .badge {
+            background-color: #ff6251;
+            border-radius: 10px;
+            min-width: 30px;
+            width: 30px;
+            height: 20px;
+            text-align: center;
+            color: #fff;
+            line-height: 20px;
+            float: right;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+
+        li .message_wrapper .name_wrapper {
+            width: 180px;
+            color: #000;
+            display: flex;
+        }
+
+            li .message_wrapper .name_wrapper .name {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: #000;
+                overflow: hidden;
+                font-weight: 600;
+                max-width: 150px;
+            }
+
+        li .message_wrapper .message {
+            color: #666;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            width: 180px;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .collapse {
+            font-size: 12px;
+            color: #3bbaff;
+            text-align: right;
+            flex: 1;
+        }
+
+        .column_spacing {
+            flex: 1;
+        }
+
+        /******scroll*****/
+        ::-webkit-scrollbar-thumb {
+            background-color: gray;
+            height: 50px;
+            outline-offset: -2px;
+            outline: 2px solid #fff;
+            -webkit-border-radius: 4px;
+            border: 2px solid #fff;
+        }
+
+
+
+            /*---鼠标点击滚动条显示样式--*/
+
+            ::-webkit-scrollbar-thumb:hover {
+                background-color: gray;
+                height: 50px;
+                -webkit-border-radius: 4px;
+            }
+
+
+
+        /*---滚动条大小--*/
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+
+
+        /*---滚动框背景样式--*/
+
+        ::-webkit-scrollbar-track-piece {
+            background-color: #fff;
+            -webkit-border-radius: 0;
+        }
+
+        /*******END*******/
+    </style>
+    <script type="text/javascript">
+        function doOpen(chat_id, msg_id) {
+            cefNotice.openChat(chat_id, msg_id)
+        }
+
+        window.onload = function () {
+            cefNotice.initNotice(function (res) {
+                let notice = JSON.parse(res);
+                loadNotice(notice);
+            })
+        }
+        function loadNotice(data) {
+            let notices = data;
+            let html = ''
+            let total = 0
+            for (var i = 0; i < notices.length; i++) {
+                let notice = notices[i]
+                total += notice.badge
+                html += '<li>'
+                html += '<div class="content" onclick="doOpen(\'' + notice.chat_id + '\', \'' + notice.msg_id + '\')">'
+                html += '<div class="img" style="background-image: url(\'localfile://assets/' + notice.image_id + '\');"></div>'
+                html += '<div class="message_wrapper">'
+                html += '<div class="column_spacing"></div>'
+                html += '<div class="name_wrapper">'
+                html += '<div class="name">' + notice.header + '</div>'
+                html += '<a class="collapse" onclick="toggleMessage(this, event)">&nbsp;展开</a>'
+                html += '</div>'
+                html += '<div class="message" style="display:none">' + (notice.chat_type == 'D' ? '' : (notice.sender + ': ')) + notice.message + '</div>'
+                html += '<div class="column_spacing"></div>'
+                html += '</div>'
+                html += '<div class="badge">' + (notice.badge > 99 ? '99+' : notice.badge) + '</div>'
+                html += '</div>'
+                html += '</li>'
+            }
+            document.getElementById('notice_wrapper').innerHTML = html
+            // document.getElementById('count').innerHTML = notices.length
+
+        }
+        function ignoreAll() {
+            cefNotice.ignoreAll()
+        }
+
+        function toggleMessage(me, evt) {
+            var m_wrapper = me.parentNode.parentNode
+            var m = m_wrapper.querySelector('.message')
+            var c = m_wrapper.querySelector('.collapse')
+            if (m.style.display == 'block') {
+                m.style.display = 'none'
+                c.innerText = '展开'
+            } else {
+                m.style.display = 'block'
+                c.innerText = '收起'
+            }
+            evt.stopPropagation()
+        }
+
+    </script>
+</head>
+<body>
+    <div class="header">
+        @消息 <!--· <span id="count">0</span>-->
+    </div>
+    <ul id="notice_wrapper"></ul>
+    <div class="button_wrapper">
+        <a onclick="ignoreAll()">全部忽略</a>
+    </div>
+</body>
+</html>

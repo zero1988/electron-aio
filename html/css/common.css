@@ -1,0 +1,169 @@
+﻿@font-face {
+    font-family: 'icomoon';
+    src: url('icomoon.woff?lku06e') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: 'icomoon' !important;
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-arrow-left:before {
+    content: "\e901";
+}
+
+.icon-arrow-right:before {
+    content: "\e903";
+}
+
+.icon-refresh:before {
+    content: "\e904";
+}
+
+.icon-window-close:before {
+    content: "\e905";
+}
+
+.icon-window-minimize:before {
+    content: "\e906";
+}
+
+.icon-window-restore:before {
+    content: "\e907";
+}
+
+.icon-window-maximize:before {
+    content: "\e908";
+}
+
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(245,245,245);
+}
+
+.head {
+    height: 30px;
+    display: block;
+    line-height: 30px;
+    text-align: center;
+    -webkit-app-region: drag;
+}
+
+    .head .title {
+        padding-left: 108px;
+        padding-top: 12px;
+        font-size: 14px;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+    }
+
+.window-box {
+    float: right;
+    height: 30px;
+    margin: 0px;
+    padding: 0px;
+}
+
+    .window-box li {
+        float: left;
+        list-style: none;
+    }
+
+.toolbar-box {
+    float: left;
+    height: 30px;
+    margin: 0px;
+    padding: 0px;
+    width: 96px;
+}
+
+    .toolbar-box li {
+        float: left;
+        list-style: none;
+    }
+
+.b-title {
+    flex: 1;
+    line-height: 32px;
+    text-align: center;
+    font-size: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.min, .max, .close {
+    height: 22px;
+    width: 32px;
+    display: block;
+    text-align: center;
+    line-height: 22px;
+    color: #5e5e5e;
+    text-decoration: none;
+    -webkit-app-region: no-drag;
+}
+
+.arrow, .refresh {
+    height: 32px;
+    width: 32px;
+    display: block;
+    text-align: center;
+    line-height: 32px;
+    font-size: 20px;
+    color: #5e5e5e;
+    text-decoration: none;
+    -webkit-app-region: no-drag;
+}
+
+.min:hover, .max:hover {
+    background-color: #e5e5e5;
+    text-decoration: none;
+}
+
+.min:active, .max:active {
+    background-color: #cdcdcd;
+    text-decoration: none;
+}
+
+.close:hover {
+    background-color: #e74450;
+    text-decoration: none;
+    color: white;
+}
+
+.close:active {
+    background-color: #f25561;
+    text-decoration: none;
+}
+
+.arrow:hover, .refresh:hover {
+    color: rgb(95,162,221);
+    cursor: pointer;
+}
+
+.arrow-disable {
+    height: 32px;
+    width: 32px;
+    display: block;
+    text-align: center;
+    line-height: 32px;
+    font-size: 20px;
+    text-decoration: none;
+    -webkit-app-region: no-drag;
+    color: rgb(185,185,185);
+    cursor: default;
+}

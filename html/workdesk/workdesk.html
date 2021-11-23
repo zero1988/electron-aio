@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>workdesk</title>
+    <link rel="stylesheet" href="../css/common.css" />
+    <style type="text/css">
+        body {
+            overflow-y: hidden;
+        }
+
+        .title {
+            float: left;
+            padding: 0 15px !important;
+        }
+
+        .container {
+            position: absolute;
+            top: 30px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+        }
+
+        .min .max .close {
+            height: 30px;
+            line-height: 30px;
+        }
+    </style>
+    <script type="text/javascript">
+        window.onload = function () {
+            cefWorkDesk.initWorkDesk(function (moduleName,url) {
+                document.getElementById('moduleName').innerText = moduleName;
+                document.getElementById('frameAIO7').src = url;
+            })
+        }
+
+        var setMaxIcon = function (t) {
+            var max = document.getElementById('max');
+            if (t == 'max') {
+                max.className = 'icon-window-maximize max';
+            } else {
+                max.className = 'icon-window-restore max';
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="head">
+        <span id="moduleName" class="title">¹¤×÷Ì¨</span>
+        <ul class="window-box">
+            <li onclick="cefWorkDesk.min()"><a class="icon-window-minimize min"></a></li>
+            <li onclick="cefWorkDesk.max()"><a id="max" class="icon-window-restore max"></a></li>
+            <li onclick="cefWorkDesk.close()"><a class="icon-window-close close"></a></li>
+        </ul>
+    </div>
+    <div class="container">
+        <iframe id="frameAIO7" name="frameAIO7" frameborder="0" class="iframe" src=""></iframe>
+    </div>
+
+</body>
+
+</html>

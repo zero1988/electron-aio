@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>图片浏览</title>
+    <link rel="stylesheet" href="viewer.css">
+    <script src="../FilePlugin.js"></script>
+    <script src="../FileTransferPlugin.js"></script>
+    <link rel="stylesheet" href="../../css/common.css" />
+    <script>
+        var setMaxIcon = function (t) {
+            var max = document.getElementById('max');
+            if (t == 'max') {
+                max.className = 'icon-window-maximize max';
+            } else {
+                max.className = 'icon-window-restore max';
+            }
+        }
+
+        var openMenu = function (e) {
+            if (!e) e = window.event;
+            if (e.button == 2) {
+                var menu = document.getElementById("menu");
+                menu.style.display = "none";
+                if (e.clientX + 120 + 20 >= window.document.body.clientWidth) {
+                    menu.style.left = (e.clientX - 120) + 'px';
+                } else {
+                    menu.style.left = e.clientX + 'px';
+                }
+
+                if (e.clientY + 120 + 20 >= (window.document.body.clientHeight + document.getElementsByClassName('viewer-container')[0].offsetHeight)) {
+                    menu.style.top = (e.clientY - 120) + 'px';
+                } else {
+                    menu.style.top = e.clientY + 'px';
+                }
+                menu.style.display = "block";
+            } else {
+                var x = e.clientX;
+                var y = e.clientY;
+                var menu = document.getElementById("menu");
+                if (x < menu.offsetLeft || x > (menu.offsetLeft + menu.clientWidth) ||
+                    y < menu.offsetTop || y > (menu.offsetTop + menu.clientHeight)) {
+                    menu.style.display = "none";
+                }
+
+            }
+        }
+
+        var execIMG = function (op) {
+            var menu = document.getElementById("menu");
+            menu.style.display = "none";
+            var url = viewer.image.src;
+            var fileName = '';
+            for (var i = 0; i < imagesData.length; i++) {
+                if (url == imagesData[i].url) {
+                    fileName = imagesData[i].name;
+                    break;
+                }
+            }
+            url = decodeURI(url);
+            switch (op) {
+                case 'copy':
+                    cefImageView.setCopyImage(url);
+                    break;
+                case 'saveAs':
+                    cefImageView.saveAs(url, fileName);
+                    break;
+                case 'open':
+                    cefImageView.open(url);
+                    break;
+                case 'openDirectory':
+                    cefImageView.openDirectory(url);
+                    break;
+                case 'openOrigin':
+
+            }
+        }
+
+    </script>
+</head>
+<body onmousedown="openMenu(event)">
+    <script src="viewer.js"></script>
+    <script>
+        /**
+         * 获取年月目录 2018/201807/
+         * @param {*} date
+         */
+        function getTimeYMStr(date) {
+            if (!date) return '';
+            if (!(date instanceof Date)) {
+                date = new Date(parseInt(date, 10));
+            }
+
+            var year = date.getFullYear().toString(),
+                month = (date.getMonth() + 1).toString();
+            if (month.length == 1) {
+                month = '0' + month;
+            }
+
+            return year + '/' + year + month + '/';
+        };
+
+        function hideOriginBtn() {
+            var ul = viewer.toolbar.childNodes[0];
+            if (ul.querySelector('.viewer-download')) {
+                ul.querySelector('.viewer-download').style.display = 'none';
+            }
+        }
+
+        function showOriginBtn() {
+            var ul = viewer.toolbar.childNodes[0];
+            if (ul.querySelector('.viewer-download')) {
+                ul.querySelector('.viewer-download').style.display = 'list-item';
+            }
+        }
+
+        function addLoadingCss() {
+            var d = document.getElementsByClassName('viewer-canvas');
+            if (d.length > 0) {
+                d[0].classList.add('viewer-loading');
+            }
+        }
+
+        function removeLoadingCss() {
+            var d = document.getElementsByClassName('viewer-canvas');
+            if (d.length > 0) {
+                d[0].classList.remove('viewer-loading');
+            }
+        }
+
+        var imagesData = JSON.parse(window.cefImageView.images) || [],
+            saveDir = (window.cefImageView.accountID || window.cefImageView.getAccountID() ? window.cefImageView.accountID || window.cefImageView.getAccountID() + '/' : '') + (window.cefImageView.userID || window.cefImageView.getUserID() ? window.cefImageView.userID || window.cefImageView.getUserID() + '/' : '') + 'images/';
+
+        var container = document.createElement('div');
+        for (var i = 0; i < imagesData.length; i++) {
+            var data = imagesData[i];
+            var img = document.createElement('img');
+            img.src = data.url;
+
+            if (data.original) img.setAttribute('data-original', data.original);
+            container.appendChild(img);
+        }
+
+        var viewer = null;
+        window.addEventListener('DOMContentLoaded', function () {
+            viewer = new Viewer(container, {
+                saveDir: saveDir,
+                //url: 'data-original', // 直接用src
+                button: false,
+                backdrop: false,
+                transition: false,
+                zoomRatio: 0.2,
+                toolbar: {
+                    saveAs: function () { // 另存
+                        var url = viewer.image.src;
+                        var fileName = '';
+                        for (var i = 0; i < imagesData.length; i++) {
+                            if (url == imagesData[i].url) {
+                                fileName = imagesData[i].name;
+                                break;
+                            }
+                        }
+                        cefImageView.saveAs(decodeURI(url), fileName);
+                    },
+                    oneToOne: true, // viewer.toolbar.childNodes[0].removeChild(viewer.toolbar.querySelector('.viewer-download'))
+                    rotateRight: true,
+                    download: function () { // 下载原图
+                        // 在最外层加上遮罩
+                        addLoadingCss();
+                        var url = viewer.image.src,
+                            dataOrigin = '',
+                            time = new Date();
+                        for (var i = 0; i < imagesData.length; i++) {
+                            if (url == imagesData[i].url) {
+                                dataOrigin = imagesData[i].original;
+                                time = imagesData[i].createAt;
+                                break;
+                            }
+                        }
+                        var fileid = FileUtil.getFileNameWoExt(dataOrigin),
+                            relativePath = getTimeYMStr(time) + fileid + '.' + FileUtil.getExtension(url);
+                        var savePath = saveDir + relativePath;
+                        FileMgr.downFile(dataOrigin, 1, savePath).then(p => {
+                            viewer.image.setAttribute('src', 'local' + p);
+                            // 去除原图按钮
+                            hideOriginBtn();
+                            // 取消遮罩
+                            removeLoadingCss();
+                            // 更改本地数据库数据
+                            //cefImageView.execMainMethod('imgViewDownPic', JSON.stringify({
+                            //    file_id: fileid,
+                            //    file_path: relativePath
+                            //}));
+                        }).catch(err => {
+                            // 取消遮罩
+                            removeLoadingCss();
+                            throw new Error(err);
+                        });
+                    }
+                },
+                viewed: function () {
+                    var url = viewer.image.src,
+                        dataOrigin = '',
+                        time = new Date();
+                    for (var i = 0; i < imagesData.length; i++) {
+                        if (url == imagesData[i].url) {
+                            dataOrigin = imagesData[i].original;
+                            time = imagesData[i].createAt;
+                            break;
+                        }
+                    }
+                    var fileid = FileUtil.getFileNameWoExt(dataOrigin),
+                        relativePath = getTimeYMStr(time) + fileid + '.' + FileUtil.getExtension(url);
+                    var savePath = saveDir + relativePath;
+                    FileMgr.exists(1, savePath).then(p => {
+                        if (url != viewer.image.src) return;
+                        if (p) { //
+                            hideOriginBtn();
+                            viewer.image.setAttribute('src', 'local' + p.nativeURL);
+                        } else {
+                            //showOriginBtn();
+
+                            // 直接下载原图
+                            addLoadingCss();
+                            FileMgr.downFile(dataOrigin, 1, savePath).then(p => {
+                                viewer.image.setAttribute('src', 'local' + p);
+                                // 去除原图按钮
+                                hideOriginBtn();
+                                // 取消遮罩
+                                removeLoadingCss();
+                                // 更改本地数据库数据
+                                //cefImageView.execMainMethod('imgViewDownPic', JSON.stringify({
+                                //    file_id: fileid,
+                                //    file_path: relativePath
+                                //}));
+                            }).catch(err => {
+                                // 取消遮罩
+                                removeLoadingCss();
+                                throw new Error(err);
+                            });
+                        }
+                    });
+                }
+            });
+            if (window.cefImageView.initialindex && window.cefImageView.initialindex >= 0) {
+                viewer.view(window.cefImageView.initialindex);
+            }
+            else {
+                viewer.show();
+            }
+        });
+    </script>
+    <div class="head">
+        <span class="title">图片预览</span>
+        <ul class="window-box">
+            <li onclick="cefImageView.min()"><a class="icon-window-minimize min"></a></li>
+            <li onclick="cefImageView.max()"><a id="max" class="icon-window-maximize max"></a></li>
+            <li onclick="cefImageView.close()"><a class="icon-window-close close"></a></li>
+        </ul>
+    </div>
+    <ul id="menu" class="popup-item">
+        <li onclick="execIMG('copy')">复制</li>
+        <li onclick="execIMG('saveAs')">另存为</li>
+        <li onclick="execIMG('open')">打开</li>
+    </ul>
+</body>
+</html>
