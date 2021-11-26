@@ -1,4 +1,3 @@
-
 //var argscheck = require('cordova/argscheck');
 var exec = file.exec;
 //var FileError = require('FileError');
@@ -104,8 +103,14 @@ Entry.prototype.moveTo = function (parent, newName, successCallback, errorCallba
             if (successCallback) {
                 // create appropriate Entry object
                 var newFSName = entry.filesystemName || (entry.filesystem && entry.filesystem.name);
-                var fs = newFSName ? new FileSystem(newFSName, { name: '', fullPath: '/' }) : new FileSystem(parent.filesystem.name, { name: '', fullPath: '/' }); // eslint-disable-line no-undef
-                var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL);
+                var fs = newFSName ? new FileSystem(newFSName, {
+                    name: '',
+                    fullPath: '/'
+                }) : new FileSystem(parent.filesystem.name, {
+                    name: '',
+                    fullPath: '/'
+                }); // eslint-disable-line no-undef
+                var result = (entry.isDirectory) ? new(require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL);
                 successCallback(result);
             }
         } else {
@@ -149,8 +154,14 @@ Entry.prototype.copyTo = function (parent, newName, successCallback, errorCallba
             if (successCallback) {
                 // create appropriate Entry object
                 var newFSName = entry.filesystemName || (entry.filesystem && entry.filesystem.name);
-                var fs = newFSName ? new FileSystem(newFSName, { name: '', fullPath: '/' }) : new FileSystem(parent.filesystem.name, { name: '', fullPath: '/' }); // eslint-disable-line no-undef
-                var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL);
+                var fs = newFSName ? new FileSystem(newFSName, {
+                    name: '',
+                    fullPath: '/'
+                }) : new FileSystem(parent.filesystem.name, {
+                    name: '',
+                    fullPath: '/'
+                }); // eslint-disable-line no-undef
+                var result = (entry.isDirectory) ? new(require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL);
                 successCallback(result);
             }
         } else {
@@ -281,7 +292,7 @@ var exec = file.exec;
 var utils = {}
 utils.extend = (function () {
     // proxy used to establish prototype chain
-    var F = function () { };
+    var F = function () {};
     // extend Child from Parent
     return function (Child, Parent) {
 
@@ -852,7 +863,9 @@ function initRead(reader, file) {
     }
 
     if (reader.onloadstart) {
-        reader.onloadstart(new ProgressEvent('loadstart', { target: reader }));
+        reader.onloadstart(new ProgressEvent('loadstart', {
+            target: reader
+        }));
     }
 }
 
@@ -888,7 +901,10 @@ function readSuccessCallback(readType, encoding, offset, totalSize, accumulate, 
         this._progress = Math.min(this._progress + CHUNK_SIZE, totalSize);
 
         if (typeof this.onprogress === 'function') {
-            this.onprogress(new ProgressEvent('progress', { loaded: this._progress, total: totalSize }));
+            this.onprogress(new ProgressEvent('progress', {
+                loaded: this._progress,
+                total: totalSize
+            }));
         }
     }
 
@@ -909,11 +925,15 @@ function readSuccessCallback(readType, encoding, offset, totalSize, accumulate, 
         this._readyState = FileReader.DONE;
 
         if (typeof this.onload === 'function') {
-            this.onload(new ProgressEvent('load', { target: this }));
+            this.onload(new ProgressEvent('load', {
+                target: this
+            }));
         }
 
         if (typeof this.onloadend === 'function') {
-            this.onloadend(new ProgressEvent('loadend', { target: this }));
+            this.onloadend(new ProgressEvent('loadend', {
+                target: this
+            }));
         }
     }
 }
@@ -932,11 +952,15 @@ function readFailureCallback(e) {
     this._error = new FileError(e);
 
     if (typeof this.onerror === 'function') {
-        this.onerror(new ProgressEvent('error', { target: this }));
+        this.onerror(new ProgressEvent('error', {
+            target: this
+        }));
     }
 
     if (typeof this.onloadend === 'function') {
-        this.onloadend(new ProgressEvent('loadend', { target: this }));
+        this.onloadend(new ProgressEvent('loadend', {
+            target: this
+        }));
     }
 }
 
@@ -957,11 +981,15 @@ FileReader.prototype.abort = function () {
 
     // If abort callback
     if (typeof this.onabort === 'function') {
-        this.onabort(new ProgressEvent('abort', { target: this }));
+        this.onabort(new ProgressEvent('abort', {
+            target: this
+        }));
     }
     // If load end callback
     if (typeof this.onloadend === 'function') {
-        this.onloadend(new ProgressEvent('loadend', { target: this }));
+        this.onloadend(new ProgressEvent('loadend', {
+            target: this
+        }));
     }
 };
 
@@ -1406,12 +1434,16 @@ FileWriter.prototype.abort = function () {
 
     // If abort callback
     if (typeof this.onabort === 'function') {
-        this.onabort(new ProgressEvent('abort', { 'target': this }));
+        this.onabort(new ProgressEvent('abort', {
+            'target': this
+        }));
     }
 
     // If write end callback
     if (typeof this.onwriteend === 'function') {
-        this.onwriteend(new ProgressEvent('writeend', { 'target': this }));
+        this.onwriteend(new ProgressEvent('writeend', {
+            'target': this
+        }));
     }
 };
 
@@ -1435,7 +1467,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
         /* eslint-enable no-undef */
         fileReader.onload = function () {
             // Call this method again, with the arraybuffer as argument
-            FileWriter.prototype.write.call(that, this.result, true /* isPendingBlobReadResult */);
+            FileWriter.prototype.write.call(that, this.result, true /* isPendingBlobReadResult */ );
         };
         fileReader.onerror = function () {
             // DONE state
@@ -1446,12 +1478,16 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
 
             // If onerror callback
             if (typeof that.onerror === 'function') {
-                that.onerror(new ProgressEvent('error', { 'target': that }));
+                that.onerror(new ProgressEvent('error', {
+                    'target': that
+                }));
             }
 
             // If onwriteend callback
             if (typeof that.onwriteend === 'function') {
-                that.onwriteend(new ProgressEvent('writeend', { 'target': that }));
+                that.onwriteend(new ProgressEvent('writeend', {
+                    'target': that
+                }));
             }
         };
 
@@ -1468,7 +1504,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
 
     // Mark data type for safer transport over the binary bridge
     isBinary = supportsBinary && (data instanceof ArrayBuffer);
-    if (isBinary) {//&& cordova.platformId === 'windowsphone') { // eslint-disable-line no-undef
+    if (isBinary) { //&& cordova.platformId === 'windowsphone') { // eslint-disable-line no-undef
         // create a plain array, using the keys from the Uint8Array view so that we can serialize it
         data = Array.apply(null, new Uint8Array(data));
     }
@@ -1485,7 +1521,9 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
 
     // If onwritestart callback
     if (typeof me.onwritestart === 'function') {
-        me.onwritestart(new ProgressEvent('writestart', { 'target': me }));
+        me.onwritestart(new ProgressEvent('writestart', {
+            'target': me
+        }));
     }
 
     // Write file
@@ -1508,12 +1546,16 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
 
             // If onwrite callback
             if (typeof me.onwrite === 'function') {
-                me.onwrite(new ProgressEvent('write', { 'target': me }));
+                me.onwrite(new ProgressEvent('write', {
+                    'target': me
+                }));
             }
 
             // If onwriteend callback
             if (typeof me.onwriteend === 'function') {
-                me.onwriteend(new ProgressEvent('writeend', { 'target': me }));
+                me.onwriteend(new ProgressEvent('writeend', {
+                    'target': me
+                }));
             }
         },
         // Error callback
@@ -1531,12 +1573,16 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
 
             // If onerror callback
             if (typeof me.onerror === 'function') {
-                me.onerror(new ProgressEvent('error', { 'target': me }));
+                me.onerror(new ProgressEvent('error', {
+                    'target': me
+                }));
             }
 
             // If onwriteend callback
             if (typeof me.onwriteend === 'function') {
-                me.onwriteend(new ProgressEvent('writeend', { 'target': me }));
+                me.onwriteend(new ProgressEvent('writeend', {
+                    'target': me
+                }));
             }
         }, 'File', 'write', [this.localURL, data, this.position, isBinary]);
 };
@@ -1592,7 +1638,9 @@ FileWriter.prototype.truncate = function (size) {
 
     // If onwritestart callback
     if (typeof me.onwritestart === 'function') {
-        me.onwritestart(new ProgressEvent('writestart', { 'target': this }));
+        me.onwritestart(new ProgressEvent('writestart', {
+            'target': this
+        }));
     }
 
     // Write file
@@ -1613,12 +1661,16 @@ FileWriter.prototype.truncate = function (size) {
 
             // If onwrite callback
             if (typeof me.onwrite === 'function') {
-                me.onwrite(new ProgressEvent('write', { 'target': me }));
+                me.onwrite(new ProgressEvent('write', {
+                    'target': me
+                }));
             }
 
             // If onwriteend callback
             if (typeof me.onwriteend === 'function') {
-                me.onwriteend(new ProgressEvent('writeend', { 'target': me }));
+                me.onwriteend(new ProgressEvent('writeend', {
+                    'target': me
+                }));
             }
         },
         // Error callback
@@ -1636,12 +1688,16 @@ FileWriter.prototype.truncate = function (size) {
 
             // If onerror callback
             if (typeof me.onerror === 'function') {
-                me.onerror(new ProgressEvent('error', { 'target': me }));
+                me.onerror(new ProgressEvent('error', {
+                    'target': me
+                }));
             }
 
             // If onwriteend callback
             if (typeof me.onwriteend === 'function') {
-                me.onwriteend(new ProgressEvent('writeend', { 'target': me }));
+                me.onwriteend(new ProgressEvent('writeend', {
+                    'target': me
+                }));
             }
         }, 'File', 'truncate', [this.localURL, size]);
 };
@@ -1959,8 +2015,6 @@ requestFileSystem = function (type, size, successCallback, errorCallback) {
 resolveLocalFileSystemURL = function (uri, successCallback, errorCallback) {
     //argscheck.checkArgs('sFF', 'resolveLocalFileSystemURI', arguments);
     // error callback
-
-    console.log('xxxxxx: ' + uri)
     var fail = function (error) {
         if (errorCallback) {
             errorCallback(new FileError(error));
@@ -1987,7 +2041,10 @@ resolveLocalFileSystemURL = function (uri, successCallback, errorCallback) {
                 fileSystems.getFs(fsName, function (fs) {
                     // This should happen only on platforms that haven't implemented requestAllFileSystems (windows)
                     if (!fs) {
-                        fs = new FileSystem(fsName, { name: '', fullPath: '/' }); // eslint-disable-line no-undef
+                        fs = new FileSystem(fsName, {
+                            name: '',
+                            fullPath: '/'
+                        }); // eslint-disable-line no-undef
                     }
                     var result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL);
                     successCallback(result);

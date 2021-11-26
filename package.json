@@ -12,11 +12,15 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
+    "axios": "^0.24.0",
+    "diskinfo": "^0.0.3",
     "electron": "^16.0.1",
-    "electron-builder": "^22.14.5"
+    "electron-builder": "^22.14.5",
+    "electron-rebuild": "^3.2.5",
+    "uuid": "^8.3.2"
   },
   "dependencies": {
-    "node-rsa": "^1.1.1",
-    "sqlite3": "^5.0.2"
+    "better-sqlite3": "^7.4.5",
+    "node-rsa": "^1.1.1"
   }
 }

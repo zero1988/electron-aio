@@ -1,5 +1,69 @@
 const path = require('path')
-const sqlite3 = require('sqlite3').verbose()
+const sqlite3 = require('better-sqlite3')
+
+
+window.SqliteCommand = function (db, type, sql, params) {
+    this.db = db
+    this.sql = sql
+    this.params = params
+    this.type = type
+    this.ExecuteNonQuery = function () {
+        const me = this,
+            result = {
+                type: 'success',
+                result: {}
+            }
+        try {
+            const info = me.db.prepare(me.sql).run(me.params)
+            if (me.type === 'insert') {
+                if (info.lastInsertRowid) {
+                    result.result = {
+                        insertId: info.lastInsertRowid,
+                        rowsAffected: 1
+                    }
+                } else {
+                    result.result = {
+                        rowsAffected: 0
+                    }
+                }
+            } else {
+                if (this.changes > 0) {
+                    result.result = {
+                        rowsAffected: info.changes
+                    }
+                }
+            }
+        } catch (err) {
+            result.type = 'error'
+            result.result = {
+                code: err.code,
+                message: err.message
+            }
+        }
+        return result
+    }
+    this.ExecuteQuery = function () {
+        const me = this,
+            result = {
+                type: 'success',
+                result: {}
+            }
+
+        try {
+            const rows = me.db.prepare(me.sql).all(me.params)
+            result.result = {
+                rows: rows
+            }
+        } catch (err) {
+            result.type = 'error'
+            result.result = {
+                code: err.code,
+                message: err.message
+            }
+        }
+        return result
+    }
+}
 
 window.sqlite = {
     db: null,
@@ -7,7 +71,7 @@ window.sqlite = {
         try {
             const name = args[0]['name']
             const filename = path.join(__dirname, '../db/' + name + '.db')
-            this.db = new sqlite3.Database(filename)
+            this.db = new sqlite3(filename)
             success();
         } catch (e) {
             this.db = null
@@ -40,45 +104,29 @@ window.sqlite = {
                 })
             })
 
-            this.db.serialize(() => {
-                queries.forEach(item => {
-                    let result = {
-                        type: 'success',
-                        message: '',
-                        result: null
+
+            let results = []
+            queries.forEach(item => {
+                item.sql = item.sql.replace(/"/g, '\'')
+                let pattern = /^[\s;]*([^\s;]+)/
+                if (pattern.test(item.sql)) {
+                    let type = item.sql.match(pattern)[0]
+                    let command = new SqliteCommand(this.db, type, item.sql, item.params)
+                    switch (type.toLowerCase()) {
+                        case 'select':
+                            results.push(command.ExecuteQuery());
+                            break
+                        case 'insert':
+                        case 'update':
+                        case 'delete':
+                        default:
+                            results.push(command.ExecuteNonQuery());
+                            break
                     }
-                    let pattern = /^[\s;]*([^\s;]+)/
-                    if (pattern.test(item.sql)) {
-                        let queryType = item.sql.match(pattern)[0]
-                        switch (queryType.toLowerCase()) {
-                            case 'insert':
-                            case 'update':
-                            case 'delete':
-                                this.db.run(item.sql, item.params, (err) => {
-                                    if (err) {
-                                        result.type = 'error'
-                                        result.message = err ? err.message : ''
-                                    }
-                                    callback(result)
-                                })
-                                break
-                            case 'select':
-                                this.db.all(item.sql, item.params, (err, rows) => {
-                                    if (err) {
-                                        result.type = 'error'
-                                        result.message = err ? err.message : ''
-                                    } else {
-                                        result.result = rows
-                                    }
-                                    callback(result)
-                                })
-                                break
-                            default:
-                                break
-                        }
-                    }
-                })
+                }
             })
+            callback(JSON.stringify(results))
+
         }
     }
 }

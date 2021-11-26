@@ -3,6 +3,9 @@ const fs = require('fs')
 const RSA = require('node-rsa')
 const M = require('./M')
 const Cache = require('./Cache')
+const {
+    v4
+} = require('uuid')
 
 
 window.cefMain = {
@@ -18,6 +21,46 @@ window.cefMain = {
         } else {
             return config.RouteUrl
         }
+    },
+    getSettingData() {
+        var configPath = path.join(__dirname, '../data/user.json')
+        let jsonStr
+        if (fs.existsSync(configPath)) {
+            jsonStr = fs.readFileSync(configPath, 'utf8')
+        } else {
+            var user = {
+                ignore: 0,
+                file_folder: path.join(__dirname, '../data'),
+                send_hot_key: '',
+                capture_hot_key: '',
+                open_main_hot_key: '',
+                work_folder: '',
+                work_folder_show: '',
+            }
+
+            jsonStr = JSON.stringify(user)
+            fs.writeFileSync(configPath, jsonStr, 'utf8')
+        }
+        return jsonStr
+    },
+    addNotice(notice) {
+
+    },
+    getUserOrgData() {
+        var configPath = path.join(__dirname, '../data/organization.json')
+        if (fs.existsSync(configPath)) {
+            var jsonStr = fs.readFileSync(configPath, 'utf8')
+        } else {
+            var organization = {
+                orgroot_show: ''
+            }
+            jsonStr = JSON.stringify(organization)
+            fs.writeFileSync(configPath, jsonStr, 'utf8')
+        }
+        return jsonStr
+    },
+    getDataDirectory() {
+        return ('file:///' + path.join(__dirname, '../data/')).replace(/\\/g, '/')
     },
     getCurrentRouteConfigJsonStr() {
         var configPath = path.join(__dirname, '../config.json')
@@ -49,11 +92,25 @@ window.cefMain = {
         //! todo...
         return false
     },
+    setGeneralInfo(info) {
+        var general = JSON.parse(info)
+        window.M.CurrentUser.SettingData = general.SettingData
+        window.M.CurrentUser.OrgData = general.OrgData
+        //! 注册快捷键
+        //! 初始化窗口
+
+    },
+    addUserInfo(userInfo) {
+        //! todo...
+    },
     setUserInfo(userInfo) {
         // todo...  
         M.CurrentUser = userInfo
         // todo... 加载个人设置
         // todo... 设置登录成功
+    },
+    getUserInfo() { // 获取当前用户信息
+        return M.CurrentUser
     },
     checkVersion() {
         return 'true|1.0.39.497'
@@ -77,6 +134,12 @@ window.cefMain = {
             encryptionScheme: 'pkcs1'
         })
         return rsa.encrypt(password, 'base64')
+    },
+    switchToMainWindow() {
+
+    },
+    clearNotice() {
+
     },
     addLogin(userId, password, token, userName, callback) {
         var configPath = path.join(__dirname, '../config.json')
@@ -110,6 +173,12 @@ window.cefMain = {
     },
     getWholeRest() {
         return M.IsWholeReset
+    },
+    getGuid() {
+        return v4()
+    },
+    updateLogin(userId, password, token, userName, callback) {
+
     },
     removeLogin(callback) {
 

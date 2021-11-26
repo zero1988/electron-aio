@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 /* global cordova, FileSystem */
 var exec1 = fileTransfer.exec;
@@ -127,15 +127,15 @@ var FileTransfer = function () {
 };
 
 /**
-* Given an absolute file path, uploads a file on the device to a remote server
-* using a multipart HTTP request.
-* @param filePath {String}           Full path of the file on the device
-* @param server {String}             URL of the server to receive the file
-* @param successCallback (Function}  Callback to be invoked when upload has completed
-* @param errorCallback {Function}    Callback to be invoked upon error
-* @param options {FileUploadOptions} Optional parameters such as file name and mimetype
-* @param trustAllHosts {Boolean} Optional trust all hosts (e.g. for self-signed certs), defaults to false
-*/
+ * Given an absolute file path, uploads a file on the device to a remote server
+ * using a multipart HTTP request.
+ * @param filePath {String}           Full path of the file on the device
+ * @param server {String}             URL of the server to receive the file
+ * @param successCallback (Function}  Callback to be invoked when upload has completed
+ * @param errorCallback {Function}    Callback to be invoked upon error
+ * @param options {FileUploadOptions} Optional parameters such as file name and mimetype
+ * @param trustAllHosts {Boolean} Optional trust all hosts (e.g. for self-signed certs), defaults to false
+ */
 FileTransfer.prototype.upload = function (filePath, server, successCallback, errorCallback, options, trustAllHosts) {
     //argscheck.checkArgs('ssFFO*', 'FileTransfer.upload', arguments);
     // check for options
@@ -171,8 +171,7 @@ FileTransfer.prototype.upload = function (filePath, server, successCallback, err
         }
         if (options.params) {
             params = options.params;
-        }
-        else {
+        } else {
             params = {};
         }
     }
@@ -181,7 +180,7 @@ FileTransfer.prototype.upload = function (filePath, server, successCallback, err
     //    headers = headers && convertHeadersToArray(headers);
     //    params = params && convertHeadersToArray(params);
     //}
-
+    debugger
     var fail = errorCallback && function (e) {
         try {
             if (typeof (e) != 'object' && typeof (e) == 'string') {
@@ -190,10 +189,10 @@ FileTransfer.prototype.upload = function (filePath, server, successCallback, err
             }
             var error = new FileTransferError(e.code, e.source, e.target, e.http_status, e.body, e.exception);
             errorCallback(error);
-        } catch (ex) { }
+        } catch (ex) {}
 
     };
-
+    debugger
     var self = this;
     var win = function (result) {
         var res = JSON.parse(result);
@@ -208,7 +207,7 @@ FileTransfer.prototype.upload = function (filePath, server, successCallback, err
                     successCallback(res);
                 }
             }
-        } catch(ex) {
+        } catch (ex) {
 
         }
     };
@@ -225,6 +224,7 @@ FileTransfer.prototype.upload = function (filePath, server, successCallback, err
  * @param options {FileDownloadOptions} Optional parameters such as headers
  */
 FileTransfer.prototype.download = function (source, target, successCallback, errorCallback, trustAllHosts, options) {
+    console.log("FileTransfer.prototype.download********************************************");
     //argscheck.checkArgs('ssFF*', 'FileTransfer.download', arguments);
     var self = this;
 
@@ -259,8 +259,7 @@ FileTransfer.prototype.download = function (source, target, successCallback, err
             var entry = null;
             if (result.isDirectory) {
                 entry = new DirectoryEntry();
-            }
-            else if (result.isFile) {
+            } else if (result.isFile) {
                 entry = new FileEntry();
             }
             entry.isDirectory = result.isDirectory;
@@ -281,7 +280,6 @@ FileTransfer.prototype.download = function (source, target, successCallback, err
         errorCallback(error);
 
     };
-
     exec1(win, fail, 'FileTransfer', 'download', [source, target, trustAllHosts, this._id, headers]);
 };
 

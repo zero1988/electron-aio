@@ -18,7 +18,7 @@ const createWindow = () => {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            webSecurity: false,
+            // webSecurity: true,
             preload: path.join(__dirname, 'preload.js')
         }
     })
@@ -28,10 +28,20 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
+
+    console.log('ready')
     protocol.registerFileProtocol('localfile', (request, callback) => {
-        const url = request.url.substr(11)
+        var url = request.url.substr(13)
+        if (url.indexOf('?') !== -1) {
+            url = url.substr(0, url.indexOf('?'))
+        }
+        if (process.platform === 'win32') {
+            url = url.replace(/\//g, '\\')
+        } else {
+            url = url.replace(/\\/g, '/')
+        }
         callback({
-            path: path.normalize(`${__dirname}/${url}`)
+            path: path.normalize(url)
         })
     })
 
