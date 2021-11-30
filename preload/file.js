@@ -1,7 +1,5 @@
 const path = require('path')
 const fs = require('fs')
-const diskInfo = require('diskinfo')
-
 
 window.FileSystemURL = function (url, fsname, fspath, directory) {
     this.url = url
@@ -37,15 +35,20 @@ window.file = {
         }
     },
     getFreeDiskSpace(success) {
-        var disk = __dirname.substr(0, 2).toLowerCase()
-        diskInfo.getDrives((_, drives) => {
-            drives.some(drive => {
-                if (drive.mount === disk) {
-                    success(drive.available)
-                    return true
-                }
+        if (process.platform !== 'darwin') {
+            const diskinfo = require('diskinfo')
+            var disk = __dirname.substr(0, 2).toLowerCase()
+            diskInfo.getDrives((_, drives) => {
+                drives.some(drive => {
+                    if (drive.mount === disk) {
+                        success(drive.available)
+                        return true
+                    }
+                })
             })
-        })
+        } else {
+            success(2000000000)
+        }
     },
     testFileExists(args, success) {
         var filename = args[0]
