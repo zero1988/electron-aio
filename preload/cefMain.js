@@ -3,9 +3,14 @@ const fs = require('fs')
 const RSA = require('node-rsa')
 const M = require('./M')
 const Cache = require('./Cache')
+const image = require('imageinfo')
+const {
+    ipcRenderer,
+} = require('electron')
 const {
     v4
 } = require('uuid')
+
 
 
 window.cefMain = {
@@ -200,7 +205,27 @@ window.cefMain = {
         fs.writeFileSync(configPath, JSON.stringify(config), 'utf8')
 
         callback('true|移除登录信息成功')
+    },
+    selectImages(callback) {
+        ipcRenderer.on('select-images-reply', (event, filePaths) => {
+            let fileList = []
+            filePaths.filePaths.forEach(filePath => {
+                let img = image(fs.readFileSync(filePath))
+                fileList.push({
+                    path: filePath,
+                    width: img.width,
+                    height: img.height,
+                    size: fs.statSync(filePath).size
+                })
 
+            })
+            callback(JSON.stringify(fileList))
+        })
+        ipcRenderer.send('select-images')
+
+    },
+    fileExist(url) {
+        return fs.existsSync(url)
     }
 }
 

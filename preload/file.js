@@ -232,7 +232,9 @@ window.file = {
         var srcURL = FileSystemURL.parse(src)
         var destURL = FileSystemURL.parse(dest)
 
-        fs.mkdirSync(destURL.fspath)
+        if (!fs.existsSync(srcURL.fspath)) {
+            fs.mkdirSync(destURL.fspath)
+        }
 
         var destFilename = path.join(destURL.fspath, newname)
 
@@ -275,7 +277,6 @@ window.file = {
         var tmpPath = path.join(baseURLStr, filename)
         var requestedURL = FileSystemURL.parse(tmpPath)
         var fullPath = requestedURL.fspath
-        debugger
         if (create) {
             if (!fs.existsSync(fullPath)) {
                 if (directory)

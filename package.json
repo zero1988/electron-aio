@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "better-sqlite3": "^7.4.5",
-    "node-rsa": "^1.1.1"
+    "imageinfo": "^1.0.4",
+    "node-rsa": "^1.1.1",
+    "request": "^2.88.2"
   }
 }

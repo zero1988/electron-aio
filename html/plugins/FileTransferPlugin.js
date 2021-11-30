@@ -180,7 +180,6 @@ FileTransfer.prototype.upload = function (filePath, server, successCallback, err
     //    headers = headers && convertHeadersToArray(headers);
     //    params = params && convertHeadersToArray(params);
     //}
-    debugger
     var fail = errorCallback && function (e) {
         try {
             if (typeof (e) != 'object' && typeof (e) == 'string') {
@@ -192,7 +191,6 @@ FileTransfer.prototype.upload = function (filePath, server, successCallback, err
         } catch (ex) {}
 
     };
-    debugger
     var self = this;
     var win = function (result) {
         var res = JSON.parse(result);
