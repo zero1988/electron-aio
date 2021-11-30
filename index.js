@@ -1,8 +1,11 @@
 const {
     app,
     BrowserWindow,
-    protocol
+    protocol,
+    ipcMain,
+    dialog
 } = require('electron')
+
 
 path = require('path')
 
@@ -60,4 +63,18 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit()
     }
+})
+
+ipcMain.on('select-images', (event, _) => {
+    dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
+        title: '选择图片',
+        filters: [{
+            name: 'Images',
+            extensions: ['jpg', 'png', 'gif', 'bmp']
+        }],
+        properties: ['openFile', 'multiSelections'],
+        message: '选择图片' // macOS用
+    }).then(result => {
+        event.reply('select-images-reply', result)
+    })
 })

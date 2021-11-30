@@ -6,6 +6,7 @@ const axios = require('axios')
 const file = require('./file')
 const fs = require('fs')
 const path = require('path')
+const request = require('request')
 
 
 window.FileUploadResult = function () {
@@ -41,106 +42,133 @@ window.FileProgressResult = function () {
 }
 
 window.Handle = {
-
-    BOUNDARY_PREFIX: "+++++",
-    LINE_START: "--",
-    LINE_END: '\r\n',
-
-    FILE_NOT_FOUND_ERR: 1,
-    INVALID_URL_ERR: 2,
-    CONNECTION_ERR: 3,
-    ABORTED_ERR: 4,
-    NOT_MODIFIED_ERR: 5,
-
-    MAX_BUFFER_SIZE: 8 * 1024,
-
     upload(args, success) {
-        const me = this
         var source = args[0]
         var target = args[1]
-        var fileKey = args[2] ? args[2] : 'file'
-        var fileName = args[3] ? args[3] : 'image.jpg'
-        var mimeType = args[4] ? args[4] : 'image/jpeg'
-        var parameters = args[5] ? args[5] : {} // todo...
-        var chunkedMode = args[7] ? args[7] : true
-        var headers = args[8] // todo...
-        var objectId = args[9]
-        var httpMethod = args[10] ? args[10] : "POST"
-
-
-        var BOUNDARY = me.BOUNDARY_PREFIX + v4()
-
-
-        //! todo... parameters
-        // JObject parameters = (args[5] == null ? new JObject() : args[5].Value < JObject > ());
-
-
-        // JObject headers = args[8].Value < JObject > ();
-        // if (headers == null && parameters != null) {
-        //     headers = parameters.Value < JObject > ("headers");
-        // }
-
-        var totalBytes = 0
-        var fixedLength = -1
+        var parameters = args[5]
 
         var result = new FileUploadResult()
         var progress = new FileProgressResult()
 
-
-
-        var useHttps = source.toLowerCase().startsWith('https://')
-        const agent = new https.Agent({
-            rejectUnauthorized: false
-        })
+        var formData = {}
+        for (var key in parameters) {
+            formData[key] = parameters[key]
+        }
+        formData['files'] = {
+            value: fs.createReadStream(source),
+            options: {
+                filename: path.basename(source),
+            }
+        }
 
         var options = {
+            method: 'POST',
             url: target,
-            method: httpMethod,
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            },
-            oneUploadProgress: function (progressEvent) {
-                progress.lengthComputable = progressEvent.lengthComputable
-                progress.loaded = progressEvent.loaded
-                progress.total = progressEvent.total
-                success(JSON.stringify(progress))
-            },
+            formData
+        };
+        request(options, function (err, response) {
+            if (err) {
+                result = {
+                    status: STATUS.ERROR,
+                    encodedMessage: JSON.stringify({
+                        responseCode: response.statusCode,
+                        response: err.ERROR()
+                    })
+                }
+            } else {
+                result = {
+                    status: STATUS.OK,
+                    encodedMessage: JSON.stringify({
+                        responseCode: response.statusCode,
+                        response: response.body
+                    })
+                }
+            }
+            success(JSON.stringify(result))
+        });
 
-        }
 
-        if (useHttps) {
-            options.agent = agent
-        }
+        // for (var key in parameters) {
+        //     data.append(key, parameters[key])
+        // }
 
-        axios(options).then(function (response) {
+        // data.getLength(function (err, length) {
 
-        })
+        // if (err)
+        //     return
+        // var headers = data.getHeaders()
+        // headers['content-length'] = length
 
-        var beforeData = ''
-        beforeData += me.LINE_START + me.BOUNDARY + me.LINE_END
-        beforeData += 'Content-Disposition: form-data; name="' + key + '";'
-        beforeData += ' filename="' + fileName + '"' + me.LINE_END
-        beforeData += 'Content-Type: ' + mimeType + me.LINE_END + me.LINE_END
+        // var data = new FormData();
+        // var rs = fs.createReadStream(source)
+        // rs.on('end', function () {
+        //     console.log('end')
+        //     data.append('files', rs);
+        //     data.append('chat_id', parameters.chat_id);
+        //     data.append('client_ids', parameters.client_ids);
+        //     data.append('file_id', parameters.file_id);
+        //     data.append('is_origins', 'Y');
+        //     var headers = data.headers
+        //     var config = {
+        //         method: 'post',
+        //         url: target,
+        //         data: data,
+        //         headers
+        //     };
 
-        var beforeDataBytes = Buffer.from(beforeData, 'utf8')
-        var tailParamsBytes = Buffer.from(me.LINE_END + me.LINE_START + me.BOUNDARY + me.LINE_START + me.LINE_END, 'utf8')
+        //     axios(config)
+        //         .then(function (response) {
+        //             console.log(JSON.stringify(response.data));
+        //         })
+        //         .catch(function (error) {
+        //             console.log(error);
+        //         });
 
-        var stringLength = beforeDataBytes.length + tailParamsBytes.length
-        var size = fs.statSync(source).size
-        if (size >= 0) {
-            fixedLength = size
-            if (multipartFormUpload)
-                fixedLength += stringLength
-            progress.lengthComputable = true
-            progress.total = fixedLength
-        }
+
+
+
+        // }).on('data', function () {
+        //     console.log('data')
+        // })
+
+
+        // axios({
+        //     url: target,
+        //     data: data,
+        //     method: 'post',
+        //     headers: {
+        //         'Content-Type': 'multipart/form-data',
+        //         ...data.getHeaders()
+        //     },
+        //     oneUploadProgress: function (progressEvent) {
+        //         progress.lengthComputable = progressEvent.lengthComputable
+        //         progress.loaded = progressEvent.loaded
+        //         progress.total = progressEvent.total
+        //         result = {
+        //             status: STATUS.OK,
+        //             encodedMessage: JSON.stringify(progress),
+        //         }
+        //         success(JSON.stringify(result))
+        //     },
+        // }).then(function (response) {
+        //     result = {
+        //         status: STATUS.OK,
+        //         encodedMessage: JSON.stringify({
+        //             responseCode: response.status,
+        //             response: response.data
+        //         })
+        //     }
+        //     success(JSON.stringify(result))
+
+
+        // }).catch(function (error) {
+        //     console.log(error)
+        // })
 
     },
     download(args, success) {
         var source = args[0]
         var target = args[1]
-        var objectId = args[3]
-
 
         var result = new PluginResult()
         var progress = new FileProgressResult()
